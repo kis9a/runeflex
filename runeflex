@@ -114,7 +114,7 @@ run_runeflex() {
         local index
         index="$((j + k))"
         if [[ "$BORDER_CHAR_RUNEWIDTH" -eq 0 ]]; then
-          lines[index]="${lines[$index]}$(repeat_string "$PADDING_CHAR" "$PADDING_X")$(repeat_string "$EMPTY_CHAR" "$max_line_width")"
+          lines[index]="${lines[$index]}$(repeat_string "$GAP_CHAR" "$GAP")$(repeat_string "$EMPTY_CHAR" "$max_line_width")"
         else
           if [[ $i -eq 0 ]]; then
             lines[j]="${lines[j]}$BORDER_CHAR$(repeat_string "$PADDING_CHAR" "$PADDING_X")$(repeat_string "$EMPTY_CHAR" "$max_line_width")$(repeat_string "$PADDING_CHAR" "$PADDING_X")$BORDER_CHAR"
