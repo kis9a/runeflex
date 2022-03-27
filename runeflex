@@ -60,7 +60,8 @@ OPTIONS:
   -py, --padding-y: vertical padding size
 
 EXAMPLE:
-  runeflex -b # -px 2 -py 1 <(echo "a") <(echo "bc\nd") <(echo "efg\nhi\nj")
+  runeflex -b # -px 2 -py 1 <(echo "1") <(echo "2\n4") <(echo "3\n5\n6")
+  runeflex -g 8 -mx 4 -my 2 <(echo "1") <(echo "2\n4") <(echo "3\n5\n6")
   runeflex -b # -m 2 -py 0 <(echo "a") <(echo "bc\nd")
   runeflex -b $(echo -e "\U1F4A9") -m 0 -p 0 <(echo "a") <(echo "bc金\nd")
   runeflex -g 4 ./file1 ./file2
@@ -133,18 +134,18 @@ run_runeflex() {
 
       local k
       for ((k = 0; k < $((max_line_height - j)); k++)); do
-        if [[ -z ${lines[j]} ]]; then
-          lines[j]="$(repeat_string "$MARGIN_CHAR" "$MARGIN_X")"
-        fi
         local index
         index="$((j + k))"
+        if [[ -z ${lines[index]} ]]; then
+          lines[index]="$(repeat_string "$MARGIN_CHAR" "$MARGIN_X")"
+        fi
         if [[ "$BORDER_CHAR_RUNEWIDTH" -eq 0 ]]; then
           lines[index]="${lines[$index]}$(repeat_string "$GAP_CHAR" "$GAP")$(repeat_string "$EMPTY_CHAR" "$max_line_width")"
         else
           if [[ $i -eq 0 ]]; then
-            lines[j]="${lines[j]}$BORDER_CHAR$(repeat_string "$PADDING_CHAR" "$PADDING_X")$(repeat_string "$EMPTY_CHAR" "$max_line_width")$(repeat_string "$PADDING_CHAR" "$PADDING_X")$BORDER_CHAR"
+            lines[index]="${lines[index]}$BORDER_CHAR$(repeat_string "$PADDING_CHAR" "$PADDING_X")$(repeat_string "$EMPTY_CHAR" "$max_line_width")$(repeat_string "$PADDING_CHAR" "$PADDING_X")$BORDER_CHAR"
           else
-            lines[j]="${lines[j]}$(repeat_string "$PADDING_CHAR" "$PADDING_X")$(repeat_string "$EMPTY_CHAR" "$max_line_width")$(repeat_string "$PADDING_CHAR" "$PADDING_X")$BORDER_CHAR"
+            lines[index]="${lines[index]}$(repeat_string "$PADDING_CHAR" "$PADDING_X")$(repeat_string "$EMPTY_CHAR" "$max_line_width")$(repeat_string "$PADDING_CHAR" "$PADDING_X")$BORDER_CHAR"
           fi
         fi
       done
@@ -206,8 +207,8 @@ run_runeflex() {
   done
 
   if [[ "$BORDER_CHAR_RUNEWIDTH" -ne 0 ]]; then
-    repeat_string "$MARGIN_CHAR" "$MARGIN_X"
     for ((i = 0; i < "$PADDING_Y"; i++)); do
+      repeat_string "$MARGIN_CHAR" "$MARGIN_X"
       printf "%s" "$frame_line"
       new_line
     done
