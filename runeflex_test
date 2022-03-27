@@ -88,6 +88,39 @@ EOF
 EOF
   )"
 
+  ## border case with margin
+  ## runeflex -b @ -px 5 -mx 5 -my 2 -my 4 <(echo -e "ad\nde") <(echo -e "fg\nhi\njk")
+  PADDING_X=5
+  PADDING_Y=1
+  MARGIN_X=5
+  MARGIN_Y=4
+  BORDER_CHAR="#"
+  PADDING_CHAR=" "
+  GAP_CHAR=" "
+  GAP=12
+  EMPTY_CHAR=" "
+  BORDER_CHAR_RUNEWIDTH=1
+  test_run_runeflex "$(run_runeflex <(echo -e "ad\nde") <(echo -e "fg\nhi\njk"))" "$(
+    cat <<EOF
+
+
+
+
+     ###########################
+     #            #            #
+     #     ad     #     fg     #
+     #     de     #     hi     #
+     #            #     jk     #
+     #            #            #
+     ###########################
+
+
+
+
+
+EOF
+  )"
+
   ## margin case
   ## runeflex -px 5 -mx 5 -my 4 <(echo -e "ad\nde") <(echo -e "fg\nhi\njk")
   PADDING_X=2
