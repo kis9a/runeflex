@@ -60,57 +60,77 @@ EOF
 }
 
 run_runeflex() {
-  local file=""
-  local line_max=0
-  local line_max_before=0
+  local max_line_width=0
+  local max_line_height=0
   local border_indexes=()
   local max=0
   local line=""
   local lines=()
+  local file_inputs=()
+  local file_input=""
+
+  local file=""
+  local height=0
+  for file in "$@"; do
+    file_input="$(replace_exception_string "$(cat "$file")")"
+    file_inputs+=("$file_input")
+    height="$(wc -l <<<"$file_input")"
+    if [[ "$height" -gt "$max_line_height" ]]; then
+      max_line_height="$height"
+    fi
+  done
 
   local i=0
-  for file in "$@"; do
+  for file_input in "${file_inputs[@]}"; do
     if is_exists_file "$file"; then
-      file_in="$(cat "$file")"
-      line_max="$(max_line_width "$file_in")"
-      border_index=$((line_max + border_index + PADDING_X * 2 + 1))
+      max_line_width="$(get_max_line_width "$file_input")"
+      border_index=$((max_line_width + border_index + PADDING_X * 2 + 1))
       border_indexes+=("$border_index")
 
       local j=0
       local empty_count=0
-      local empty_count_before=0
-
       while read -r line; do
-        empty_count="$((line_max - $(runewidth "$line")))"
-        if [[ -z ${lines[j]} ]]; then
-          empty_count_before="$((line_max_before))"
-        fi
-        if [[ $empty_count_before -ne 0 ]]; then
-          empty_count_before=$((empty_count_before + PADDING_X))
-        fi
+        empty_count="$((max_line_width - $(runewidth "$line")))"
         if [[ "$BORDER_CHAR_RUNEWIDTH" -eq 0 ]]; then
           if [[ "${#}" -eq $((i + 1)) ]]; then
-            lines[j]="$BORDER_CHAR$(repeat_string "$EMPTY_CHAR" "$empty_count_before")${lines[j]}$line$BORDER_CHAR"
+            lines[j]="$BORDER_CHAR${lines[j]}$line$BORDER_CHAR"
           else
-            lines[j]="$BORDER_CHAR$(repeat_string "$EMPTY_CHAR" "$empty_count_before")${lines[j]}$line$(repeat_string "$EMPTY_CHAR" "$empty_count")$BORDER_CHAR$(repeat_string "$GAP_CHAR" "$GAP")"
+            if [[ -z "$line" ]]; then
+              line="$(repeat_string "$EMPTY_CHAR" "$max_line_width")"
+            fi
+            lines[j]="$BORDER_CHAR${lines[j]}$line$(repeat_string "$EMPTY_CHAR" "$empty_count")$BORDER_CHAR$(repeat_string "$GAP_CHAR" "$GAP")"
           fi
         else
           if [[ $i -eq 0 ]]; then
-            lines[j]="$(repeat_string "$EMPTY_CHAR" "$empty_count_before")${lines[j]}$BORDER_CHAR$(repeat_string "$PADDING_CHAR" "$PADDING_X")$line$(repeat_string "$EMPTY_CHAR" "$empty_count")$(repeat_string "$PADDING_CHAR" "$PADDING_X")$BORDER_CHAR"
+            lines[j]="${lines[j]}$BORDER_CHAR$(repeat_string "$PADDING_CHAR" "$PADDING_X")$line$(repeat_string "$EMPTY_CHAR" "$empty_count")$(repeat_string "$PADDING_CHAR" "$PADDING_X")$BORDER_CHAR"
           else
-            lines[j]="$(repeat_string "$EMPTY_CHAR" "$empty_count_before")${lines[j]}$(repeat_string "$PADDING_CHAR" "$PADDING_X")$line$(repeat_string "$EMPTY_CHAR" "$empty_count")$(repeat_string "$PADDING_CHAR" "$PADDING_X")$BORDER_CHAR"
+            lines[j]="${lines[j]}$(repeat_string "$PADDING_CHAR" "$PADDING_X")$line$(repeat_string "$EMPTY_CHAR" "$empty_count")$(repeat_string "$PADDING_CHAR" "$PADDING_X")$BORDER_CHAR"
           fi
         fi
         ((j++))
-      done <<<"$file_in"
+      done <<<"$file_input"
+
+      local k
+      for ((k = 0; k < $((max_line_height - j)); k++)); do
+        local index
+        index="$((j + k))"
+        if [[ "$BORDER_CHAR_RUNEWIDTH" -eq 0 ]]; then
+          lines[index]="${lines[$index]}$(repeat_string "$PADDING_CHAR" "$PADDING_X")$(repeat_string "$EMPTY_CHAR" "$max_line_width")"
+        else
+          if [[ $i -eq 0 ]]; then
+            lines[j]="${lines[j]}$BORDER_CHAR$(repeat_string "$PADDING_CHAR" "$PADDING_X")$(repeat_string "$EMPTY_CHAR" "$max_line_width")$(repeat_string "$PADDING_CHAR" "$PADDING_X")$BORDER_CHAR"
+          else
+            lines[j]="${lines[j]}$(repeat_string "$PADDING_CHAR" "$PADDING_X")$(repeat_string "$EMPTY_CHAR" "$max_line_width")$(repeat_string "$PADDING_CHAR" "$PADDING_X")$BORDER_CHAR"
+          fi
+        fi
+      done
     else
       err_exit "$file file is not found" "$ERR_CODE_NOT_FOUND_INPUT_FILE"
     fi
-    line_max_before="$line_max"
     ((i++))
   done
 
-  max="$(max_line_width "${lines[@]}")"
+  max="$(get_max_line_width "${lines[@]}")"
   local frame_empty_count="$((max - $((BORDER_CHAR_RUNEWIDTH * 2))))"
   local frame_line
 
@@ -144,7 +164,7 @@ run_runeflex() {
   fi
 }
 
-max_line_width() {
+get_max_line_width() {
   local max
   local lines
   local l
@@ -225,11 +245,6 @@ border_frame_line() {
     fi
   done
   printf "%s" "$BORDER_CHAR"
-}
-
-tab_to_space() {
-  # shellcheck disable=SC2001
-  echo "$1" | sed -e 's/\t/    /g'
 }
 
 is_pipe() {
