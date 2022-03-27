@@ -1,0 +1,101 @@
+#!/bin/bash
+# expected $(source) by ./runeflex
+
+# helper
+assert_equal() {
+  if [ "$1" != "$2" ]; then
+    echo "expected: $1"
+    echo "actual:   $2"
+    return 1
+  fi
+}
+
+assert_range() {
+  if [ "$1" -lt "$2" ]; then
+    echo "expected: $1"
+    echo "greater than: $2"
+    return 1
+  fi
+  if [ "$1" -gt "$3" ]; then
+    echo "expected: $1"
+    echo "less than: $3"
+    return 1
+  fi
+}
+
+is_diff() {
+  if [[ -z "$(diff <(echo "$1") <(echo "$2"))" ]]; then
+    return 1
+  else
+    return 0
+  fi
+}
+
+test_err() {
+  echo -e "${red}❌${cf} $1" 1>&2
+}
+
+test_suc() {
+  echo -e "${green}✓ ${cf} $1" 1>&2
+}
+
+# test
+testing_run() {
+  # test run_runeflex
+  ## first
+  ## runeflex -px 2 <(echo -e "ad\nde") <(echo -e "fg\nhi\njk")
+  PADDING_X=1
+  PADDING_Y=1
+  MARGIN_X=0
+  MARGIN_Y=0
+  BORDER_CHAR=""
+  PADDING_CHAR=" "
+  GAP_CHAR=" "
+  GAP=1
+  EMPTY_CHAR=" "
+  BORDER_CHAR_RUNEWIDTH=0
+  test_run_runeflex "$(run_runeflex <(echo -e "ad\nde") <(echo -e "fg\nhi\njk"))" "$(
+    cat <<EOF
+ad fg
+de hi
+   jk
+EOF
+  )"
+
+  ## border case
+  ## runeflex -b @ -g 12 -px 4 -py 2 <(echo "ad\nde") <(echo "fg\nhi\njk")
+  PADDING_X=4
+  PADDING_Y=2
+  MARGIN_X=0
+  MARGIN_Y=0
+  BORDER_CHAR="@"
+  PADDING_CHAR=" "
+  GAP_CHAR=" "
+  GAP=12
+  EMPTY_CHAR=" "
+  BORDER_CHAR_RUNEWIDTH=1
+  test_run_runeflex "$(run_runeflex <(echo -e "ad\nde") <(echo -e "fg\nhi\njk"))" "$(
+    cat <<EOF
+@@@@@@@@@@@@@@@@@@@@@@@
+@          @          @
+@          @          @
+@    ad    @    fg    @
+@    de    @    hi    @
+@          @    jk    @
+@          @          @
+@          @          @
+@@@@@@@@@@@@@@@@@@@@@@@
+EOF
+  )"
+}
+
+test_run_runeflex() {
+  if is_diff "$1" "$2"; then
+    test_err "test_run_runeflex: failed:\n$1"
+    echo -e "expected:\n$2"
+  else
+    test_suc "test_run_runeflex:\n$1"
+  fi
+}
+
+testing_run "$@"
