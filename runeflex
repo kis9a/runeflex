@@ -89,6 +89,9 @@ run_runeflex() {
       local j=0
       local empty_count=0
       while read -r line; do
+        if [[ -z ${lines[j]} ]]; then
+          lines[j]="$(repeat_string "$MARGIN_CHAR" "$MARGIN_X")"
+        fi
         empty_count="$((max_line_width - $(runewidth "$line")))"
         if [[ "$BORDER_CHAR_RUNEWIDTH" -eq 0 ]]; then
           if [[ "${#}" -eq $((i + 1)) ]]; then
@@ -111,6 +114,9 @@ run_runeflex() {
 
       local k
       for ((k = 0; k < $((max_line_height - j)); k++)); do
+        if [[ -z ${lines[j]} ]]; then
+          lines[j]="$(repeat_string "$MARGIN_CHAR" "$MARGIN_X")"
+        fi
         local index
         index="$((j + k))"
         if [[ "$BORDER_CHAR_RUNEWIDTH" -eq 0 ]]; then
@@ -155,11 +161,7 @@ run_runeflex() {
     printf "%s\n" "$line"
   done
 
-  if [[ "$BORDER_CHAR_RUNEWIDTH" -eq 0 ]]; then
-    for ((i = 0; i < "$MARGIN_Y"; i++)); do
-      new_line
-    done
-  else
+  if [[ "$BORDER_CHAR_RUNEWIDTH" -ne 0 ]]; then
     for ((i = 0; i < "$PADDING_Y"; i++)); do
       printf "%s" "$frame_line"
       new_line
@@ -315,10 +317,11 @@ trap exit_quit QUIT SIGINT
 # vars
 PADDING_X=1
 PADDING_Y=1
+PADDING_CHAR=" "
 MARGIN_X=0
 MARGIN_Y=0
+MARGIN_CHAR=" "
 BORDER_CHAR=""
-PADDING_CHAR=" "
 GAP_CHAR=" "
 GAP=1
 EMPTY_CHAR=" "
@@ -450,5 +453,11 @@ elif ! is_exists "runewidth"; then
   err_exit "Command not found: runewidth" "$ERR_CODE_NOT_FOUND_RUNEWIDTH"
 else
   out="$(run_runeflex "$@")"
-  echo "$out"
+  printf "%s\n" "$out"
+  ## How to save bottom empty line in variable ?
+  if [[ "$BORDER_CHAR_RUNEWIDTH" -eq 0 ]]; then
+    for ((i = 0; i < "$MARGIN_Y"; i++)); do
+      new_line
+    done
+  fi
 fi
