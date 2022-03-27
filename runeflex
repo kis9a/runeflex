@@ -50,61 +50,98 @@ USAGE:
 OPTIONS:
   -h: help
   -t: test: runeflex_test
-  -m: margin size
-  -x: horizontal margin size
-  -y: vertical margin size
+  -p: padding size
+  -x: horizontal padding size
+  -y: vertical padding size
   -b: border option
-  -c: display center
 
 EXAMPLE:
 EOF
 }
 
 run_runeflex() {
-  local file
-  local file_max
-  local flie_max_before
-  local max
-  local line
-  local lines
+  local file=""
+  local line_max=0
+  local line_max_before=0
+  local border_indexes=()
+  local max=0
+  local line=""
+  local lines=()
 
   local i=0
   for file in "$@"; do
     if is_exists_file "$file"; then
       file_in="$(cat "$file")"
-      file_max="$(max_line_width "$file_in")"
-      max=$((max + file_max))
+      line_max="$(max_line_width "$file_in")"
+      border_index=$((line_max + border_index + PADDING_X * 2 + 1))
+      border_indexes+=("$border_index")
+
       local j=0
       local empty_count=0
       local empty_count_before=0
+
       while read -r line; do
-        empty_count="$((file_max - $(runewidth "$line")))"
+        empty_count="$((line_max - $(runewidth "$line")))"
         if [[ -z ${lines[j]} ]]; then
-          empty_count_before="$((flie_max_before))"
+          empty_count_before="$((line_max_before))"
         fi
         if [[ $empty_count_before -ne 0 ]]; then
-          empty_count_before=$((empty_count_before + BOX_MARGIN_X))
+          empty_count_before=$((empty_count_before + PADDING_X))
         fi
-        if [[ "$#" -eq $((i + 1)) ]]; then
-          if [[ $BOX_CHAR_RUNEWIDTH -eq 0 ]]; then
-            lines[j]="$(repeat_string ' ' "$empty_count_before")${lines[j]}$line"
+        if [[ "$BORDER_CHAR_RUNEWIDTH" -eq 0 ]]; then
+          if [[ "${#}" -eq $((i + 1)) ]]; then
+            lines[j]="$BORDER_CHAR$(repeat_string "$EMPTY_CHAR" "$empty_count_before")${lines[j]}$line$BORDER_CHAR"
+          else
+            lines[j]="$BORDER_CHAR$(repeat_string "$EMPTY_CHAR" "$empty_count_before")${lines[j]}$line$(repeat_string "$EMPTY_CHAR" "$empty_count")$BORDER_CHAR$(repeat_string "$GAP_CHAR" "$GAP")"
           fi
         else
-          lines[j]="$(repeat_string ' ' "$empty_count_before")${lines[j]}$line$(repeat_string ' ' "$BOX_MARGIN_X")$(repeat_string ' ' "$empty_count")"
+          if [[ $i -eq 0 ]]; then
+            lines[j]="$(repeat_string "$EMPTY_CHAR" "$empty_count_before")${lines[j]}$BORDER_CHAR$(repeat_string "$PADDING_CHAR" "$PADDING_X")$line$(repeat_string "$EMPTY_CHAR" "$empty_count")$(repeat_string "$PADDING_CHAR" "$PADDING_X")$BORDER_CHAR"
+          else
+            lines[j]="$(repeat_string "$EMPTY_CHAR" "$empty_count_before")${lines[j]}$(repeat_string "$PADDING_CHAR" "$PADDING_X")$line$(repeat_string "$EMPTY_CHAR" "$empty_count")$(repeat_string "$PADDING_CHAR" "$PADDING_X")$BORDER_CHAR"
+          fi
         fi
         ((j++))
       done <<<"$file_in"
     else
       err_exit "$file file is not found" "$ERR_CODE_NOT_FOUND_INPUT_FILE"
     fi
-    flie_max_before="$file_max"
+    line_max_before="$line_max"
     ((i++))
   done
 
-  line=""
+  max="$(max_line_width "${lines[@]}")"
+  local frame_empty_count="$((max - $((BORDER_CHAR_RUNEWIDTH * 2))))"
+  local frame_line
+
+  if [[ "$BORDER_CHAR_RUNEWIDTH" -ne 0 ]]; then
+    frame_line="$(border_frame_line "$frame_empty_count" "${border_indexes[@]}")"
+  fi
+
+  if [[ "$BORDER_CHAR_RUNEWIDTH" -eq 0 ]]; then
+    echo ""
+  else
+    repeat_string "$BORDER_CHAR" "$max"
+    new_line
+    for ((i = 0; i < "$PADDING_Y"; i++)); do
+      printf "%s" "$frame_line"
+      new_line
+    done
+  fi
+
   for line in "${lines[@]}"; do
-    echo "$line"
+    printf "%s\n" "$line"
   done
+
+  if [[ "$BORDER_CHAR_RUNEWIDTH" -eq 0 ]]; then
+    echo ""
+  else
+    for ((i = 0; i < "$PADDING_Y"; i++)); do
+      printf "%s" "$frame_line"
+      new_line
+    done
+    repeat_string "$BORDER_CHAR" "$max"
+  fi
 }
 
 max_line_width() {
@@ -129,17 +166,43 @@ repeat_string() {
   fi
 }
 
+is_array_contains() {
+  local i
+  local j
+  for i in "$@"; do
+    if [[ $j -ne 0 ]]; then
+      if [[ "$1" == "$i" ]]; then
+        return 0
+      fi
+    fi
+    ((j++))
+  done
+  return 1
+}
+
+replace_exception_string() {
+  # shellcheck disable=SC2001
+  printf "%s" "$1" | sed -e 's/0x0B/    /g' | # Vertical TAB
+    sed -e 's/\t/    /g' |                    # TAB
+    sed -e 's/\x08/  /g' |                    # backspace
+    sed -e 's/\x09/  /g' |                    # Horizon TAB
+    sed -e 's/\r/  /g' |                      # cr
+    sed -e 's/\x0c/  /g' |                    # form feed
+    sed -e 's/\0x7f/  /g' |                   # delete
+    sed -e 's/\x1b/  /g'                      # escape
+}
+
 empty_block() {
-  printf ' '
+  printf "%s" "$EMPTY_CHAR"
 }
 
-front_margin_block() {
+front_padding_block() {
   printf "%s" "$1"
-  repeat_string ' ' "$2"
+  repeat_string "$GAP_CHAR" "$2"
 }
 
-back_margin_block() {
-  repeat_string ' ' "$2"
+back_padding_block() {
+  repeat_string "$GAP_CHAR" "$2"
   printf "%s" "$1"
 }
 
@@ -151,10 +214,17 @@ new_line() {
   printf "\n"
 }
 
-empty_frame_line() {
-  printf "%s" "$1"
-  repeat_string ' ' "$2"
-  printf "%s" "$1"
+border_frame_line() {
+  local j
+  printf "%s" "$BORDER_CHAR"
+  for ((j = 0; j < "$1"; j++)); do
+    if is_array_contains "$((j + 1))" "${@:2}"; then
+      printf "%s" "$BORDER_CHAR"
+    else
+      printf "%s" "$EMPTY_CHAR"
+    fi
+  done
+  printf "%s" "$BORDER_CHAR"
 }
 
 tab_to_space() {
@@ -224,16 +294,20 @@ IFS=""
 trap exit_quit QUIT SIGINT
 
 # vars
-BOX_MARGIN_X=2
-BOX_MARGIN_Y=0
+PADDING_X=1
+PADDING_Y=1
 BORDER_CHAR=""
-BOX_CHAR_RUNEWIDTH=0
+PADDING_CHAR=" "
+GAP_CHAR=" "
+GAP=1
+EMPTY_CHAR=" "
+BORDER_CHAR_RUNEWIDTH=0
 TEST_FILE="./runeflex_test"
 POSITIONAL_ARGS=()
 
 ## error code
 ERR_CODE_INVALID_OPTION=3
-ERR_CODE_INVALID_BOX_CHAR_WIDTH=4
+ERR_CODE_INVALID_BORDER_CHAR_WIDTH=4
 ERR_CODE_NOT_FOUND_RUNEWIDTH=5
 ERR_CODE_NOT_FOUND_INPUT_FILE=6
 ERR_CODE_NOT_FOUND_TESTFILE=7
@@ -257,40 +331,39 @@ while [[ $# -gt 0 ]]; do
     shift # past argument
     shift # past value
     ;;
-  -c | --center)
+  -g | --gap)
     if is_number "$2"; then
-      BOX_MARGIN_X="$2"
-      BOX_MARGIN_Y="$2"
+      GAP="$2"
     else
-      err_exit "--margin option argument is expected the number" "$ERR_CODE_INVALID_OPTION"
+      err_exit "--gap option argument is expected the number" "$ERR_CODE_INVALID_OPTION"
     fi
     shift # past argument
     shift # past value
     ;;
-  -m | --margin)
+  -p | --padding)
     if is_number "$2"; then
-      BOX_MARGIN_X="$2"
-      BOX_MARGIN_Y="$2"
+      PADDING_X="$2"
+      PADDING_Y="$2"
     else
-      err_exit "--margin option argument is expected the number" "$ERR_CODE_INVALID_OPTION"
+      err_exit "--padding option argument is expected the number" "$ERR_CODE_INVALID_OPTION"
     fi
     shift # past argument
     shift # past value
     ;;
-  -mx | --margin-x)
+  -px | --padding-x)
     if is_number "$2"; then
-      BOX_MARGIN_X="$2"
+      PADDING_X="$2"
     else
-      err_exit "--margin-x option argument is expected the number" "$ERR_CODE_INVALID_OPTION"
+      err_exit "--padding-x option argument is expected the number" "$ERR_CODE_INVALID_OPTION"
     fi
     shift # past argument
     shift # past value
     ;;
-  -my | --margin-y)
+  -py | --padding-y)
     if is_number "$2"; then
-      BOX_MARGIN_Y="$2"
+      PADDING_Y="$2"
     else
-      err_exit "--margin-y option argument is expected the number" "$ERR_CODE_INVALID_OPTION"
+      err_exit "--padding-y option argument is expected the number" "$ERR_CODE_INVALID_OPTION"
     fi
     shift # past argument
     shift # past value
@@ -319,11 +392,11 @@ done
 set -- "${POSITIONAL_ARGS[@]}"
 
 # fix box char runewidth
-BOX_CHAR_RUNEWIDTH="$(runewidth "$BORDER_CHAR")"
+BORDER_CHAR_RUNEWIDTH="$(runewidth "$BORDER_CHAR")"
 
 # validation
-if [[ -z "$BOX_CHAR_RUNEWIDTH" || "$BOX_CHAR_RUNEWIDTH" -gt 2 ]]; then
-  err_exit "String is over 2 runewidth" "$ERR_CODE_INVALID_BOX_CHAR_WIDTH"
+if [[ -z "$BORDER_CHAR_RUNEWIDTH" || "$BORDER_CHAR_RUNEWIDTH" -gt 2 ]]; then
+  err_exit "String is over 2 runewidth" "$ERR_CODE_INVALID_BORDER_CHAR_WIDTH"
 elif ! is_exists "runewidth"; then
   err_exit "Command not found: runewidth" "$ERR_CODE_NOT_FOUND_RUNEWIDTH"
 else
