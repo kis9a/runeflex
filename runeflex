@@ -45,17 +45,25 @@ show_help() {
   cat <<'EOF'
 
 USAGE:
-  runeflex [options] <border_char>
+  runeflex [options] [argument] [file1] [file...]
 
 OPTIONS:
-  -h: help
-  -t: test: runeflex_test
-  -p: padding size
-  -x: horizontal padding size
-  -y: vertical padding size
-  -b: border option
+  -h, --help: show help
+  -t, --test: test: runeflex_test
+  -b, --border: border char of flexbox
+  -g, --gap: gap space of flexbox
+  -m, --margin: margin size
+  -mx, --margin-x: horizontal margin size
+  -my, --margin-y: vertical margin size
+  -p, --padding: padding size
+  -px, --padding-x: horizontal padding size
+  -py, --padding-y: vertical padding size
 
 EXAMPLE:
+  runeflex -b # -px 2 -py 1 <(echo "a") <(echo "bc\nd") <(echo "efg\nhi\nj")
+  runeflex -b # -m 2 -py 0 <(echo "a") <(echo "bc\nd")
+  runeflex -b $(echo -e "\U1F4A9") -m 0 -p 0 <(echo "a") <(echo "bc金\nd")
+  runeflex -g 4 ./file1 ./file2
 EOF
 }
 
