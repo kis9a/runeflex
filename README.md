@@ -2,7 +2,7 @@
 
 ### Image
 
-<!-- ![runeflex command image](./runeflex.png) -->
+![runeflex command image](./runeflex.png)
 
 ### Required
 
@@ -39,8 +39,8 @@ OPTIONS:
   -py, --padding-y: vertical padding size
 
 EXAMPLE:
-  runeflex -b # -px 2 -py 1 <(echo "a") <(echo "bc\nd") <(echo "efg\nhi\nj")
-  runeflex -b # -m 2 -py 0 <(echo "a") <(echo "bc\nd")
+  runeflex -b # -px 2 -py 1 <(echo "1") <(echo "2\n4") <(echo "3\n5\n6")
+  runeflex -g 8 -mx 4 -my 2 <(echo "1") <(echo "2\n4") <(echo "3\n5\n6")
   runeflex -b $(echo -e "\U1F4A9") -m 0 -p 0 <(echo "a") <(echo "bc金\nd")
   runeflex -g 4 ./file1 ./file2
 ```
