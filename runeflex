@@ -63,7 +63,6 @@ run_runeflex() {
   local max_line_width=0
   local max_line_height=0
   local border_indexes=()
-  local max=0
   local line=""
   local lines=()
   local file_inputs=()
@@ -130,6 +129,7 @@ run_runeflex() {
     ((i++))
   done
 
+  local max
   max="$(get_max_line_width "${lines[@]}")"
   local frame_empty_count="$((max - $((BORDER_CHAR_RUNEWIDTH * 2))))"
   local frame_line
@@ -139,7 +139,9 @@ run_runeflex() {
   fi
 
   if [[ "$BORDER_CHAR_RUNEWIDTH" -eq 0 ]]; then
-    echo ""
+    for ((i = 0; i < "$MARGIN_Y"; i++)); do
+      new_line
+    done
   else
     repeat_string "$BORDER_CHAR" "$max"
     new_line
@@ -154,7 +156,9 @@ run_runeflex() {
   done
 
   if [[ "$BORDER_CHAR_RUNEWIDTH" -eq 0 ]]; then
-    echo ""
+    for ((i = 0; i < "$MARGIN_Y"; i++)); do
+      new_line
+    done
   else
     for ((i = 0; i < "$PADDING_Y"; i++)); do
       printf "%s" "$frame_line"
@@ -311,6 +315,8 @@ trap exit_quit QUIT SIGINT
 # vars
 PADDING_X=1
 PADDING_Y=1
+MARGIN_X=0
+MARGIN_Y=0
 BORDER_CHAR=""
 PADDING_CHAR=" "
 GAP_CHAR=" "
@@ -379,6 +385,34 @@ while [[ $# -gt 0 ]]; do
       PADDING_Y="$2"
     else
       err_exit "--padding-y option argument is expected the number" "$ERR_CODE_INVALID_OPTION"
+    fi
+    shift # past argument
+    shift # past value
+    ;;
+  -m | --margin)
+    if is_number "$2"; then
+      MARGIN_X="$2"
+      MARGIN_Y="$2"
+    else
+      err_exit "--margin option argument is expected the number" "$ERR_CODE_INVALID_OPTION"
+    fi
+    shift # past argument
+    shift # past value
+    ;;
+  -mx | --margin-x)
+    if is_number "$2"; then
+      MARGIN_X="$2"
+    else
+      err_exit "--margin-x option argument is expected the number" "$ERR_CODE_INVALID_OPTION"
+    fi
+    shift # past argument
+    shift # past value
+    ;;
+  -my | --margin-y)
+    if is_number "$2"; then
+      MARGIN_Y="$2"
+    else
+      err_exit "--margin-y option argument is expected the number" "$ERR_CODE_INVALID_OPTION"
     fi
     shift # past argument
     shift # past value
