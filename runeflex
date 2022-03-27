@@ -83,7 +83,18 @@ run_runeflex() {
   for file_input in "${file_inputs[@]}"; do
     if is_exists_file "$file"; then
       max_line_width="$(get_max_line_width "$file_input")"
-      border_index=$((max_line_width + border_index + PADDING_X * 2 + 1))
+
+      local l=0
+      if [[ $BORDER_CHAR_RUNEWIDTH -ne 0 ]]; then
+        if [[ "$BORDER_CHAR_RUNEWIDTH" -eq 2 ]]; then
+          if [[ $((max_line_width % 2)) -ne 0 ]]; then
+            max_line_width=$((max_line_width + 1))
+          fi
+          ((l++))
+        fi
+      fi
+
+      border_index=$((max_line_width + border_index + PADDING_X * 2 + BORDER_CHAR_RUNEWIDTH))
       border_indexes+=("$border_index")
 
       local j=0
@@ -136,8 +147,31 @@ run_runeflex() {
   done
 
   local max
-  max="$(($(get_max_line_width "${lines[@]}") - MARGIN_X))"
-  local frame_empty_count="$((max - $((BORDER_CHAR_RUNEWIDTH * 2))))"
+  local singles
+  if [[ $BORDER_CHAR_RUNEWIDTH -ne 0 ]]; then
+    max="$(($(get_max_line_width "${lines[@]}") - MARGIN_X))"
+    singles="$max"
+
+    if [[ "$BORDER_CHAR_RUNEWIDTH" -eq 2 ]]; then
+      if [[ $((max % 2)) -ne 0 ]]; then
+        max=$((max + 1))
+      fi
+
+      # local index
+      local i=0
+      for index in "${border_indexes[@]}"; do
+        if [[ $((index % 2)) -ne 1 ]]; then
+          border_indexes["$i"]=$((index + 1))
+        fi
+        ((i++))
+      done
+    fi
+    max=$((max / BORDER_CHAR_RUNEWIDTH))
+  else
+    max="$(($(get_max_line_width "${lines[@]}") - MARGIN_X))"
+  fi
+
+  local frame_empty_count="$((singles - $((BORDER_CHAR_RUNEWIDTH * 2))))"
   local frame_line
 
   if [[ "$BORDER_CHAR_RUNEWIDTH" -ne 0 ]]; then
@@ -245,15 +279,25 @@ new_line() {
 }
 
 border_frame_line() {
-  local j
+  local j=0
   printf "%s" "$BORDER_CHAR"
-  for ((j = 0; j < "$1"; j++)); do
+  if [[ "$BORDER_CHAR_RUNEWIDTH" -eq 2 ]]; then
+    j=2
+  fi
+  for ((j = "$j"; j < "$1"; )); do
     if is_array_contains "$((j + 1))" "${@:2}"; then
       printf "%s" "$BORDER_CHAR"
+      if [[ "$BORDER_CHAR_RUNEWIDTH" -eq 2 ]]; then
+        ((j++))
+      fi
     else
       printf "%s" "$EMPTY_CHAR"
     fi
+    ((j++))
   done
+  if [[ "$BORDER_CHAR_RUNEWIDTH" -eq 2 ]]; then
+    repeat_string "$EMPTY_CHAR" 2
+  fi
   printf "%s" "$BORDER_CHAR"
 }
 
