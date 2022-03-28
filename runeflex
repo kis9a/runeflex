@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# --- template --- {{{
 readonly cf="\\033[0m"
 readonly red="\\033[0;31m"
 readonly green="\\033[0;32m"
@@ -39,7 +38,7 @@ showdate() {
 cleanup() {
   info "cleanup.."
 }
-#}}}
+
 
 show_help() {
   cat <<'EOF'
@@ -110,7 +109,7 @@ run_runeflex() {
       local empty_count=0
       while read -r line; do
         if [[ -z ${lines[j]} ]]; then
-          lines[j]="$(repeat_string "$MARGIN_CHAR" "$MARGIN_X")"
+          lines[j]="$(repeat_char "$MARGIN_CHAR" "$MARGIN_X")"
         fi
         empty_count="$((max_line_width - $(runewidth "$line")))"
         if [[ "$BORDER_CHAR_RUNEWIDTH" -eq 0 ]]; then
@@ -118,15 +117,15 @@ run_runeflex() {
             lines[j]="$BORDER_CHAR${lines[j]}$line$BORDER_CHAR"
           else
             if [[ -z "$line" ]]; then
-              line="$(repeat_string "$EMPTY_CHAR" "$max_line_width")"
+              line="$(repeat_char "$EMPTY_CHAR" "$max_line_width")"
             fi
-            lines[j]="$BORDER_CHAR${lines[j]}$line$(repeat_string "$EMPTY_CHAR" "$empty_count")$BORDER_CHAR$(repeat_string "$GAP_CHAR" "$GAP")"
+            lines[j]="$BORDER_CHAR${lines[j]}$line$(repeat_char "$EMPTY_CHAR" "$empty_count")$BORDER_CHAR$(repeat_char "$GAP_CHAR" "$GAP")"
           fi
         else
           if [[ $i -eq 0 ]]; then
-            lines[j]="${lines[j]}$BORDER_CHAR$(repeat_string "$PADDING_CHAR" "$PADDING_X")$line$(repeat_string "$EMPTY_CHAR" "$empty_count")$(repeat_string "$PADDING_CHAR" "$PADDING_X")$BORDER_CHAR"
+            lines[j]="${lines[j]}$BORDER_CHAR$(repeat_char "$PADDING_CHAR" "$PADDING_X")$line$(repeat_char "$EMPTY_CHAR" "$empty_count")$(repeat_char "$PADDING_CHAR" "$PADDING_X")$BORDER_CHAR"
           else
-            lines[j]="${lines[j]}$(repeat_string "$PADDING_CHAR" "$PADDING_X")$line$(repeat_string "$EMPTY_CHAR" "$empty_count")$(repeat_string "$PADDING_CHAR" "$PADDING_X")$BORDER_CHAR"
+            lines[j]="${lines[j]}$(repeat_char "$PADDING_CHAR" "$PADDING_X")$line$(repeat_char "$EMPTY_CHAR" "$empty_count")$(repeat_char "$PADDING_CHAR" "$PADDING_X")$BORDER_CHAR"
           fi
         fi
         ((j++))
@@ -137,15 +136,15 @@ run_runeflex() {
         local index
         index="$((j + k))"
         if [[ -z ${lines[index]} ]]; then
-          lines[index]="$(repeat_string "$MARGIN_CHAR" "$MARGIN_X")"
+          lines[index]="$(repeat_char "$MARGIN_CHAR" "$MARGIN_X")"
         fi
         if [[ "$BORDER_CHAR_RUNEWIDTH" -eq 0 ]]; then
-          lines[index]="${lines[$index]}$(repeat_string "$GAP_CHAR" "$GAP")$(repeat_string "$EMPTY_CHAR" "$max_line_width")"
+          lines[index]="${lines[$index]}$(repeat_char "$GAP_CHAR" "$GAP")$(repeat_char "$EMPTY_CHAR" "$max_line_width")"
         else
           if [[ $i -eq 0 ]]; then
-            lines[index]="${lines[index]}$BORDER_CHAR$(repeat_string "$PADDING_CHAR" "$PADDING_X")$(repeat_string "$EMPTY_CHAR" "$max_line_width")$(repeat_string "$PADDING_CHAR" "$PADDING_X")$BORDER_CHAR"
+            lines[index]="${lines[index]}$BORDER_CHAR$(repeat_char "$PADDING_CHAR" "$PADDING_X")$(repeat_char "$EMPTY_CHAR" "$max_line_width")$(repeat_char "$PADDING_CHAR" "$PADDING_X")$BORDER_CHAR"
           else
-            lines[index]="${lines[index]}$(repeat_string "$PADDING_CHAR" "$PADDING_X")$(repeat_string "$EMPTY_CHAR" "$max_line_width")$(repeat_string "$PADDING_CHAR" "$PADDING_X")$BORDER_CHAR"
+            lines[index]="${lines[index]}$(repeat_char "$PADDING_CHAR" "$PADDING_X")$(repeat_char "$EMPTY_CHAR" "$max_line_width")$(repeat_char "$PADDING_CHAR" "$PADDING_X")$BORDER_CHAR"
           fi
         fi
       done
@@ -166,7 +165,7 @@ run_runeflex() {
         max=$((max + 1))
       fi
 
-      # local index
+      local index
       local i=0
       for index in "${border_indexes[@]}"; do
         if [[ $((index % 2)) -ne 1 ]]; then
@@ -192,11 +191,11 @@ run_runeflex() {
   done
 
   if [[ "$BORDER_CHAR_RUNEWIDTH" -ne 0 ]]; then
-    repeat_string "$MARGIN_CHAR" "$MARGIN_X"
-    repeat_string "$BORDER_CHAR" "$max"
+    repeat_char "$MARGIN_CHAR" "$MARGIN_X"
+    repeat_char "$BORDER_CHAR" "$max"
     new_line
     for ((i = 0; i < "$PADDING_Y"; i++)); do
-      repeat_string "$MARGIN_CHAR" "$MARGIN_X"
+      repeat_char "$MARGIN_CHAR" "$MARGIN_X"
       printf "%s" "$frame_line"
       new_line
     done
@@ -208,12 +207,12 @@ run_runeflex() {
 
   if [[ "$BORDER_CHAR_RUNEWIDTH" -ne 0 ]]; then
     for ((i = 0; i < "$PADDING_Y"; i++)); do
-      repeat_string "$MARGIN_CHAR" "$MARGIN_X"
+      repeat_char "$MARGIN_CHAR" "$MARGIN_X"
       printf "%s" "$frame_line"
       new_line
     done
-    repeat_string "$MARGIN_CHAR" "$MARGIN_X"
-    repeat_string "$BORDER_CHAR" "$max"
+    repeat_char "$MARGIN_CHAR" "$MARGIN_X"
+    repeat_char "$BORDER_CHAR" "$max"
   fi
 }
 
@@ -230,7 +229,7 @@ get_max_line_width() {
   printf "%d" "$max"
 }
 
-repeat_string() {
+repeat_char() {
   local i
   if [[ 0 -ne $2 ]]; then
     for ((i = 1; i <= $2; i++)); do
@@ -265,22 +264,8 @@ replace_exception_string() {
     sed -e 's/\x1b/  /g'                      # escape
 }
 
-empty_block() {
-  printf "%s" "$EMPTY_CHAR"
-}
-
-front_padding_block() {
-  printf "%s" "$1"
-  repeat_string "$GAP_CHAR" "$2"
-}
-
-back_padding_block() {
-  repeat_string "$GAP_CHAR" "$2"
-  printf "%s" "$1"
-}
-
 border_line() {
-  repeat_string "$1" "$2"
+  repeat_char "$1" "$2"
 }
 
 new_line() {
@@ -305,7 +290,7 @@ border_frame_line() {
     ((j++))
   done
   if [[ "$BORDER_CHAR_RUNEWIDTH" -eq 2 ]]; then
-    repeat_string "$EMPTY_CHAR" 2
+    repeat_char "$EMPTY_CHAR" 2
   fi
   printf "%s" "$BORDER_CHAR"
 }
@@ -409,8 +394,8 @@ while [[ $# -gt 0 ]]; do
       err_exit "$TEST_FILE file is not found" "$ERR_CODE_NOT_FOUND_TESTFILE"
     fi
     exit_health ""
-    shift # past argument
-    shift # past value
+    shift
+    shift
     ;;
   -g | --gap)
     if is_number "$2"; then
@@ -418,8 +403,8 @@ while [[ $# -gt 0 ]]; do
     else
       err_exit "--gap option argument is expected the number" "$ERR_CODE_INVALID_OPTION"
     fi
-    shift # past argument
-    shift # past value
+    shift
+    shift
     ;;
   -p | --padding)
     if is_number "$2"; then
@@ -428,8 +413,8 @@ while [[ $# -gt 0 ]]; do
     else
       err_exit "--padding option argument is expected the number" "$ERR_CODE_INVALID_OPTION"
     fi
-    shift # past argument
-    shift # past value
+    shift
+    shift
     ;;
   -px | --padding-x)
     if is_number "$2"; then
@@ -437,8 +422,8 @@ while [[ $# -gt 0 ]]; do
     else
       err_exit "--padding-x option argument is expected the number" "$ERR_CODE_INVALID_OPTION"
     fi
-    shift # past argument
-    shift # past value
+    shift
+    shift
     ;;
   -py | --padding-y)
     if is_number "$2"; then
@@ -446,8 +431,8 @@ while [[ $# -gt 0 ]]; do
     else
       err_exit "--padding-y option argument is expected the number" "$ERR_CODE_INVALID_OPTION"
     fi
-    shift # past argument
-    shift # past value
+    shift
+    shift
     ;;
   -m | --margin)
     if is_number "$2"; then
@@ -456,8 +441,8 @@ while [[ $# -gt 0 ]]; do
     else
       err_exit "--margin option argument is expected the number" "$ERR_CODE_INVALID_OPTION"
     fi
-    shift # past argument
-    shift # past value
+    shift
+    shift
     ;;
   -mx | --margin-x)
     if is_number "$2"; then
@@ -465,8 +450,8 @@ while [[ $# -gt 0 ]]; do
     else
       err_exit "--margin-x option argument is expected the number" "$ERR_CODE_INVALID_OPTION"
     fi
-    shift # past argument
-    shift # past value
+    shift
+    shift
     ;;
   -my | --margin-y)
     if is_number "$2"; then
@@ -474,8 +459,8 @@ while [[ $# -gt 0 ]]; do
     else
       err_exit "--margin-y option argument is expected the number" "$ERR_CODE_INVALID_OPTION"
     fi
-    shift # past argument
-    shift # past value
+    shift
+    shift
     ;;
   -b | --border)
     if [[ -$(runewidth "$2") -lt 3 ]]; then
@@ -491,8 +476,8 @@ while [[ $# -gt 0 ]]; do
     break
     ;;
   *)
-    POSITIONAL_ARGS+=("$1") # save positional arg
-    shift                   # past argument
+    POSITIONAL_ARGS+=("$1")
+    shift
     ;;
   esac
 done
