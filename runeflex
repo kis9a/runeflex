@@ -39,7 +39,6 @@ cleanup() {
   info "cleanup.."
 }
 
-
 show_help() {
   cat <<'EOF'
 

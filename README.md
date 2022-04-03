@@ -45,14 +45,21 @@ EXAMPLE:
   runeflex -g 4 ./file1 ./file2
 ```
 
-### Inspired
+##### vim
 
-[GitHub - kis9a/runeboxes: Display the piped string in the character box](https://github.com/kis9a/runeboxes)
+Install runeflexrn
 
-### Development
+```
+install_path=/usr/local/bin/runeflexrn
+sudo curl -s https://raw.githubusercontent.com/kis9a/runeflex/main/runeflexrn > "$install_path"
+chmod +x "$install_path"
+```
 
-Linter: [GitHub - koalaman/shellcheck: ShellCheck, a static analysis tool for shell scripts](https://github.com/koalaman/shellcheck)  
-Formatter: [GitHub - mvdan/sh: A shell parser, formatter, and interpreter with bash support; includes shfmt](https://github.com/mvdan/sh)
+```
+:'<,'>!runeflexrn -mx 4 -py 2 -b ab
+```
+
+![runeflexrn](./runeflexrn.gif)
 
 ### Testing
 
@@ -60,3 +67,12 @@ Formatter: [GitHub - mvdan/sh: A shell parser, formatter, and interpreter with b
 git clone https://github.com/kis9a/runeflex
 cd runeflex ./runeflex -t
 ```
+
+### Development
+
+Linter: [GitHub - koalaman/shellcheck: ShellCheck, a static analysis tool for shell scripts](https://github.com/koalaman/shellcheck)  
+Formatter: [GitHub - mvdan/sh: A shell parser, formatter, and interpreter with bash support; includes shfmt](https://github.com/mvdan/sh)
+
+### Inspired
+
+[GitHub - kis9a/runeboxes: Display the piped string in the character box](https://github.com/kis9a/runeboxes)
