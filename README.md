@@ -1,10 +1,10 @@
 # runeflex
 
-### Image
+## Image
 
 ![runeflex command image](./runeflex.png)
 
-### Required
+## Required
 
 runewidth command is required.  
 runewidth "string" is return fixed width of the character "string".
@@ -12,15 +12,14 @@ runewidth "string" is return fixed width of the character "string".
 I use [GitHub - mattn/go-runewidth: wcwidth for golang](https://github.com/mattn/go-runewidth) function as command line tool.  
 See installation at <https://github.com/kis9a/go-runewidth#fork>
 
-### Installation
+## Installation
 
 ```
-install_path=/usr/local/bin/runeflex
-sudo curl -s https://raw.githubusercontent.com/kis9a/runeflex/main/runeflex > "$install_path"
-chmod +x "$install_path"
+sudo curl -s https://raw.githubusercontent.com/kis9a/runeflex/main/runeflex >/usr/local/bin/runeflex
+chmod +x /usr/local/bin/runeflex
 ```
 
-### Usage
+## Usage
 
 ```
 USAGE:
@@ -37,42 +36,23 @@ OPTIONS:
   -p, --padding: padding size
   -px, --padding-x: horizontal padding size
   -py, --padding-y: vertical padding size
-
-EXAMPLE:
-  runeflex -b # -px 2 -py 1 <(echo "1") <(echo "2\n4") <(echo "3\n5\n6")
-  runeflex -g 8 -mx 4 -my 2 <(echo "1") <(echo "2\n4") <(echo "3\n5\n6")
-  runeflex -b $(echo -e "\U1F4A9") -m 0 -p 0 <(echo "a") <(echo "bc金\nd")
-  runeflex -g 4 ./file1 ./file2
 ```
 
-##### vim
+### vim
 
 Install runeflexrn
-
-```
-install_path=/usr/local/bin/runeflexrn
-sudo curl -s https://raw.githubusercontent.com/kis9a/runeflex/main/runeflexrn > "$install_path"
-chmod +x "$install_path"
-```
 
 ```
 :'<,'>!runeflexrn -mx 4 -py 2 -b ab
 ```
 
-![runeflexrn](./runeflexrn.gif)
+## Devtools
 
-### Testing
+**Style guide**
 
-```bash
-git clone https://github.com/kis9a/runeflex
-cd runeflex ./runeflex -t
-```
+> Indentation
+> Indent 2 spaces. No tabs. Use blank lines between blocks to improve readability. Indentation is two spaces. Whatever you do, don’t use tabs. For existing files, stay faithful to the existing indentation.
+> <https://google.github.io/styleguide/shellguide.html>
 
-### Development
-
-Linter: [GitHub - koalaman/shellcheck: ShellCheck, a static analysis tool for shell scripts](https://github.com/koalaman/shellcheck)  
-Formatter: [GitHub - mvdan/sh: A shell parser, formatter, and interpreter with bash support; includes shfmt](https://github.com/mvdan/sh)
-
-### Inspired
-
-[GitHub - kis9a/runeboxes: Display the piped string in the character box](https://github.com/kis9a/runeboxes)
+Linter: [GitHub - koalaman/shellcheck](https://github.com/koalaman/shellcheck)  
+Formatter: [GitHub - mvdan/sh](https://github.com/mvdan/sh)
